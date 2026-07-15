@@ -1,0 +1,87 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  username      String   @unique
+  email         String   @unique
+  password      String?
+  avatar        String?
+  coins         Int      @default(0)
+  role          Role     @default(PLAYER)
+  isVerified    Boolean  @default(false)
+  googleId      String?
+  discordId     String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  purchases     Purchase[]
+  votes         Vote[]
+  notifications Notification[]
+}
+
+enum Role {
+  PLAYER
+  ADMIN
+  OWNER
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  category    String
+  price       Int
+  description String
+  image       String
+  commands    Json
+  stock       Int?
+  createdAt   DateTime @default(now())
+}
+
+model Purchase {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  amount    Int
+  status    String   @default("COMPLETED")
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
+}
+
+model Reward {
+  id          String @id @default(cuid())
+  name        String
+  icon        String
+  description String
+  cooldown    Int
+  amount      Int
+  category    String
+  commands    Json
+}
+
+model Vote {
+  id        String   @id @default(cuid())
+  userId    String
+  site      String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+}
